@@ -1,0 +1,6 @@
+__MACOSX/
+__pycache__/
+.DS_Store
+config.py
+/scrape/.DS_Store
+.ipynb_checkpoints
