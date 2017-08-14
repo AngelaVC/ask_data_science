@@ -1,89 +1,93 @@
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup as bs
 import re
+from tinydb import TinyDB, Query
 
-def find_top_content(soup):
-    '''This script is somewhat inspired by things
-        at http://nirmalpatel.com/fcgi/hn.py'''
-    neg_class = re.compile("comment|meta|footer|footnote|foot")
-    pos_class = re.compile("post|hentry|entry|content|text|body|article")
-
-    paragraphs = soup.findAll("p")
-
-    top_parent = None
-    parents = []
-
-    for paragraph in paragraphs:
-        parent = paragraph.parent
-
-        if (parent not in parents):
-            parents.append(parent)
-            parent.score = 0
-
-        # look at presence of positive or negative words in
-        # class or id attributes
-        if (parent.has_attr("class")):
-
-            if any([bool(
-                    neg_class.search(cls)) for cls in parent['class']]):
-                parent.score -= 1
-
-            if any([bool(
-                    pos_class.search(cls)) for cls in parent['class']]):
-                parent.score += 1
-
-        if (parent.has_attr("id")):
-
-            if any([bool(neg_class.search(cls)) for cls in parent['id']]):
-                parent.score -= 1
-
-            if any([bool(pos_class.search(cls)) for cls in parent['id']]):
-                parent.score += 1
-
-    for parent in parents:
-        print(parent.score)
-        if parent.score > top_parent.score:
-            top_parent = parent
-    return top_parent
 
 class WebPage:
     def __init__(self, url=None):
         self.url = url
         self.links = []
         self.soup = None
-        self.top = None
+        self.text = None
+        self.title = None
+
+    def getAll(self):
+        self.getSoup()
+        self.getLinks()
+        self.getTitle()
+        self.getClean()
 
     def getSoup(self):
 
         # XXXX Need to make sure the url exists first!!
-
-        html = urlopen(self.url)
+        print(self.url)
+        req = Request(
+                self.url, headers={'User-Agent': "Magic Browser"})
+        html = urlopen(req)
         self.soup = bs(html, "lxml")
 
         return self.soup
 
     def getLinks(self):
         '''This gets links starting with 'http' from single page.
-        Just the links that are in the top of the page
         '''
 
         # XXXX what if there are no 'a' tags?
 
-        for link in self.top.findAll('a'):
-            if ('href' in link.attrs) & (
-                        link.attrs['href'].startswith("http")):
-                self.links.append(link.attrs['href'])
+        for link in self.soup.findAll('a'):
+            if 'href' in link.attrs:
+                if link.attrs['href'].startswith("http"):
+                    self.links.append(link.attrs['href'])
         return self.links
 
-    def getTop(self):
-        # get the parent that holds the important content
-        self.top = find_top_content(self.soup)
-        return self.top
+    def getTitle(self):
+        regex = re.compile('.*title.*')
+        title = ''
+        for EachPart in self.soup.find_all("h1", {"class": regex}):
+            title += EachPart.get_text()
+        self.title = title
+        return self.title
 
     def getText(self):
         # kill all script, style
         for junk in self.soup(["script", "style"]):
             junk.decompose()
+
+        # kill all the math in the paragraph
+        for math in self.soup.findAll("div", {"class": "math"}):
+            math.decompose()
+
+        neg_list = "comment|meta|footer|footnote|foot|script|style|bottom|margin|bottom"
+        neg_class = re.compile(neg_list, re.IGNORECASE)
+
+        paragraphs = self.soup.findAll("p")
+
+        if paragraphs is None:
+            self.text = ''
+            return self.text
+
+        for paragraph in paragraphs:
+            if (paragraph.has_attr("class")):
+                if any([bool(neg_class.search(
+                                cls)) for cls in paragraph['class']]):
+                    paragraph.decompose()
+
+            elif (paragraph.has_attr("id")):
+                if any([bool(
+                           neg_class.search(cls)) for cls in paragraph['id']]):
+                    paragraph.decompose()
+        self.text = ' '.join(
+                            [paragraph.get_text() for paragraph in paragraphs])
+
+        return self.text
+
+    def getClean(self):
+        if self.text is None:
+            self.getText()
+        self.text = self.text.replace(
+                    '\n', ' ').replace('\r', ' ').replace('\\\'', '\'').strip()
+        return self.text
 
 
 class DataTauPage(WebPage):
@@ -94,7 +98,7 @@ class DataTauPage(WebPage):
         '''This gets links starting with 'http' from single DataTau page.
         '''
         next_url = self.url
-        soup = self.getSoup()
+        self.soup = self.getSoup()
         n = 0
 
         # go through all the <a> tags, looking for "href" tags,
@@ -103,12 +107,29 @@ class DataTauPage(WebPage):
         while (next_url != '') & (n <= limit):
             next_url = ''
 
-            for link in soup.findAll('a'):
+            for link in self.soup.findAll('a'):
                 if 'href' in link.attrs:
+
                     if (link.attrs['href'].startswith("http")) & (
                                 "datatau" not in link.attrs['href']):
                         self.links.append(link.attrs['href'])
+
                     elif link.get_text().startswith("More"):
                         next_url = 'http://datatau.com' + link.attrs['href']
             n += 1
         return self.links
+
+    def scrapeLinks(self):
+        print("Scraping links: ")
+        if not self.links:
+            self.getAllLinks()
+        else:
+            for link in self.links:
+                page = WebPage(link)
+                page.getAll()
+                link_db = TinyDB('link_db.json')
+                link_db.insert({'url': link,
+                                'title': page.title,
+                                'text': page.text,
+                                'links': page.links})
+                print('.')
