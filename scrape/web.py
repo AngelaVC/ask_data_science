@@ -4,6 +4,11 @@ import re
 from tinydb import TinyDB, Query
 
 
+class Error(Exception):
+    """Base class for exceptions in this module."""
+    pass
+
+
 class WebPage:
     def __init__(self, url=None):
         self.url = url
@@ -12,7 +17,10 @@ class WebPage:
         self.text = None
         self.title = None
 
-    def getAll(self):
+        if not self.url.startswith('http://'):
+            raise Error("Must pass in URL, starting with http://")
+
+    def __getAll(self):
         self.getSoup()
         self.getLinks()
         self.getTitle()
@@ -20,8 +28,6 @@ class WebPage:
 
     def getSoup(self):
 
-        # XXXX Need to make sure the url exists first!!
-        print(self.url)
         req = Request(
                 self.url, headers={'User-Agent': "Magic Browser"})
         html = urlopen(req)
