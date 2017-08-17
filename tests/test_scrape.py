@@ -1,10 +1,11 @@
 import pytest
 
 """
-This script tests methods in a number theory class called Numbers
+This script tests methods a webscraping class called WebPage
 """
 
+
 @pytest.fixture
-def num():
-     from swe_barebones.numbers import Numbers
-     return Numbers()
+def webpage():
+    from scrape.web import WebPage
+    return WebPage()
