@@ -1,7 +1,8 @@
 from urllib.request import Request, urlopen
+from urllib.error import URLError
 from bs4 import BeautifulSoup as bs
 import re
-import database
+import scrape.database as database
 
 
 class Error(Exception):
@@ -12,14 +13,26 @@ class Error(Exception):
 class WebPage:
     def __init__(self, url=None):
         self.url = url
+        self.html = None
         self.links = []
         self.soup = None
         self.text = None
         self.title = None
 
-        if not self.url.startswith('http://'):
-            raise Error("Must pass in URL, starting with http://")
+        req = Request(self.url, headers={'User-Agent': "Magic Browser"})
+        try:
+            self.html = urlopen(req)
+        except URLError as e:
+            if hasattr(e, 'reason'):
+                print('We failed to reach a server.')
+                print('Reason: ', e.reason)
+                return 'Error'
 
+            elif hasattr(e, 'code'):
+                print('The server couldn\'t fulfill the request.')
+                print('Error code: ', e.code)
+                return 'Error'
+                
     def __getAll(self):
         self.getSoup()
         self.getLinks()
