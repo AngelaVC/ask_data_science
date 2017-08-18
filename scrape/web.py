@@ -1,7 +1,7 @@
 from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup as bs
 import re
-from tinydb import TinyDB, Query
+import database
 
 
 class Error(Exception):
@@ -32,8 +32,6 @@ class WebPage:
                 self.url, headers={'User-Agent': "Magic Browser"})
         html = urlopen(req)
         self.soup = bs(html, "lxml")
-
-        return self.soup
 
     def getLinks(self):
         '''This gets links starting with 'http' from single page.
@@ -123,9 +121,10 @@ class DataTauPage(WebPage):
                     elif link.get_text().startswith("More"):
                         next_url = 'http://datatau.com' + link.attrs['href']
             n += 1
-        return self.links
 
-    def scrapeLinks(self):
+    def scrapeStoreLinks(self, db=None):
+        ''' This will write to existing or new TinyDB database db
+            input is a WebPage object'''
         print("Scraping links: ")
         if not self.links:
             self.getAllLinks()
@@ -133,9 +132,12 @@ class DataTauPage(WebPage):
             for link in self.links:
                 page = WebPage(link)
                 page.getAll()
-                link_db = TinyDB('link_db.json')
-                link_db.insert({'url': link,
-                                'title': page.title,
-                                'text': page.text,
-                                'links': page.links})
+                if db is None:
+                    db = input("Enter database name for storage, or hit enter to \
+                          return the data.")
+                    # XX Do some checking that input is reasonable
+                    if db is None:
+                        return page
+                    else:
+                        database.WritePage(page, db)
                 print('.')
