@@ -26,21 +26,18 @@ class WebPage:
             if hasattr(e, 'reason'):
                 print('We failed to reach a server.')
                 print('Reason: ', e.reason)
-                return 'Error'
 
             elif hasattr(e, 'code'):
                 print('The server couldn\'t fulfill the request.')
                 print('Error code: ', e.code)
-                return 'Error'
-                
-    def __getAll(self):
+
+    def getAll(self):
         self.getSoup()
         self.getLinks()
         self.getTitle()
         self.getClean()
 
     def getSoup(self):
-
         req = Request(
                 self.url, headers={'User-Agent': "Magic Browser"})
         html = urlopen(req)
@@ -56,7 +53,6 @@ class WebPage:
             if 'href' in link.attrs:
                 if link.attrs['href'].startswith("http"):
                     self.links.append(link.attrs['href'])
-        return self.links
 
     def getTitle(self):
         regex = re.compile('.*title.*')
@@ -64,7 +60,6 @@ class WebPage:
         for EachPart in self.soup.find_all("h1", {"class": regex}):
             title += EachPart.get_text()
         self.title = title
-        return self.title
 
     def getText(self):
         # kill all script, style
@@ -97,14 +92,11 @@ class WebPage:
         self.text = ' '.join(
                             [paragraph.get_text() for paragraph in paragraphs])
 
-        return self.text
-
     def getClean(self):
         if self.text is None:
             self.getText()
         self.text = self.text.replace(
                     '\n', ' ').replace('\r', ' ').replace('\\\'', '\'').strip()
-        return self.text
 
 
 class DataTauPage(WebPage):
