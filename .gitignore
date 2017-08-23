@@ -4,3 +4,4 @@ __pycache__/
 config.py
 /scrape/.DS_Store
 .ipynb_checkpoints
+/bot/credentials.py
