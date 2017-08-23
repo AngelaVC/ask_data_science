@@ -127,7 +127,7 @@ class Generated():
             tweet = tweet + ' ' + next_word
             tweet, next_word = self.nextWords(tweet, next_word)
 
-        tweet = tweet + random.choice(['.','.','.','!','?',"?!?",'...'])
+        tweet = tweet + random.choice(['.',' #bigdata',' #datascience','!','?',"?!?",'...'])
         return tweet
 
     # Old version of the tweet creation method
