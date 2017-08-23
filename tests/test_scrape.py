@@ -33,7 +33,7 @@ test2_data = [((test_db, 'In the dark', 'text'), ('In the dark text', '.')),
 @pytest.mark.parametrize('x,expected', test2_data)
 def test_nextWords(x, expected, gen):
 
-    tweet, next_word = gen.nextWords(x[1
+    tweet, next_word = gen.nextWords(x[1])
 
     assert str(tweet == expected[0])
     assert str(next_word == expected[1])
