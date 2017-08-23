@@ -15,3 +15,14 @@ The class bot.twitterbot.postTweet manages the interaction with the twitter bot.
 
 # tests
 I am currently working through the implementation of unit tests, and these can all be found in this folder.
+
+# What's next?
+The following things are on my TODO list:
+* Make my tweet generator more Markovian, keeping and using counts that help be to select best next words.  
+  Right now it just does random selection out of all probabilities.
+* Compose a better end to my tweets, my first idea is to run my trigrams in reverse and after threshold
+  switch to looking for sentence enders.
+* Implement code to start with a particular word.
+* Implement code to focus on a topic.
+* Improve my database of text, pulling in more websites and tweets.
+* Write tweet responder to respond to mentions of @AskDataScience, including pulling word from mention tweet
