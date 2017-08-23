@@ -99,7 +99,8 @@ class Generated():
             while len(self.transitions[start_word]) == 0:
                  start_word = random.choice(self.words)
             next_start = random.choice(self.transitions[start_word])
-            tweet += next_start[0]
+            tweet = tweet + ' ' + next_start[0]
+
 
         return tweet, next_start[1]
 
@@ -123,75 +124,76 @@ class Generated():
                       min_length=10):
         tweet, next_word = self.firstWords(start_word)
         while len(tweet)<110:
-            tweet + ' ' + next_word
-            tweet, nextWord = self.nextWords(tweet, next_word)
+            tweet = tweet + ' ' + next_word
+            tweet, next_word = self.nextWords(tweet, next_word)
 
         return tweet
 
-    def writeTweet_v1(self, start_word=None, twt_num=1, snt_end=enders,
-                      min_length=10):
-        ''' This function starts with either a start word or a random choice
-            of anything after a
-            sentance ender. Tweet builds from there
-            using trigrams. If tweet is too long, it is split into parts.
-            If there is space, a link is enclosed.
-        '''
-
-        # This allows us to continue tweets or start on a topic
-        # by starting with given word if passed one in the function
-        if start_word is not None:
-            tweet = start_word
-            if len(self.transitions[start_word]) > 0:
-                next_start = random.choice(self.transitions[start_word])
-                next_word = next_start[1]
-            else:
-                next_start = random.choice(self.transitions[
-                                                random.choice(self.words)])
-                next_word = next_start[1]
-
-        # if not passed a start word, first make sure to start on a capital ltr
-        else:
-            next_start = random.choice(random.choice(
-                                [self.transitions[end] for end in snt_end]))
-            tweet = next_start[0].capitalize()
-            next_word = next_start[1]
-
-        # continue to build string until it gets close to tweet-length
-        while (len(tweet) + len(next_word) < 90):
-            if next_word in snt_end:
-                if len(tweet) < 140-23:
-                    tweet = tweet + self.getRandomLink()
-                else:
-                    tweet = tweet + random.choice(['.', '.', '!', '?'])
-                return tweet, False, twt_num
-
-                # if len(tweet) > min_length:
-                #     if len(tweet) < 140-23:
-                #         tweet = tweet + self.getRandomLink()
-                #     else:
-                #         tweet = tweet + random.choice(['.', '.', '!', '?'])
-                #     return tweet
-                # else:
-                #     tweet = tweet + random.choice(['.', '.', '!', '?'])
-            else:
-                tweet = tweet + ' ' + next_word
-
-            # this while loop makes sure that there are transitions from the
-            # next_word, and if there are not,
-            # randomly selectes a new next_word
-            while self.transitions[next_word] == []:
-                next_word = random.choice(self.words)
-
-            next_start = random.choice(self.transitions[next_word])
-
-            if next_start[0] in snt_end:
-                return tweet + random.choice(
-                                    ['.', '.', '!', '?']), False, twt_num
-            else:
-                tweet = tweet + ' ' + next_start[0]
-                next_word = next_start[1]
-
-        tweet, next_word, twt_num = self.endTweet(next_word, tweet)
+    # Old version of the tweet creation method
+    # def writeTweet_v1(self, start_word=None, twt_num=1, snt_end=enders,
+    #                   min_length=10):
+    #     ''' This function starts with either a start word or a random choice
+    #         of anything after a
+    #         sentance ender. Tweet builds from there
+    #         using trigrams. If tweet is too long, it is split into parts.
+    #         If there is space, a link is enclosed.
+    #     '''
+    #
+    #     # This allows us to continue tweets or start on a topic
+    #     # by starting with given word if passed one in the function
+    #     if start_word is not None:
+    #         tweet = start_word
+    #         if len(self.transitions[start_word]) > 0:
+    #             next_start = random.choice(self.transitions[start_word])
+    #             next_word = next_start[1]
+    #         else:
+    #             next_start = random.choice(self.transitions[
+    #                                             random.choice(self.words)])
+    #             next_word = next_start[1]
+    #
+    #     # if not passed a start word, first make sure to start on a capital ltr
+    #     else:
+    #         next_start = random.choice(random.choice(
+    #                             [self.transitions[end] for end in snt_end]))
+    #         tweet = next_start[0].capitalize()
+    #         next_word = next_start[1]
+    #
+    #     # continue to build string until it gets close to tweet-length
+    #     while (len(tweet) + len(next_word) < 90):
+    #         if next_word in snt_end:
+    #             if len(tweet) < 140-23:
+    #                 tweet = tweet + self.getRandomLink()
+    #             else:
+    #                 tweet = tweet + random.choice(['.', '.', '!', '?'])
+    #             return tweet, False, twt_num
+    #
+    #             # if len(tweet) > min_length:
+    #             #     if len(tweet) < 140-23:
+    #             #         tweet = tweet + self.getRandomLink()
+    #             #     else:
+    #             #         tweet = tweet + random.choice(['.', '.', '!', '?'])
+    #             #     return tweet
+    #             # else:
+    #             #     tweet = tweet + random.choice(['.', '.', '!', '?'])
+    #         else:
+    #             tweet = tweet + ' ' + next_word
+    #
+    #         # this while loop makes sure that there are transitions from the
+    #         # next_word, and if there are not,
+    #         # randomly selectes a new next_word
+    #         while self.transitions[next_word] == []:
+    #             next_word = random.choice(self.words)
+    #
+    #         next_start = random.choice(self.transitions[next_word])
+    #
+    #         if next_start[0] in snt_end:
+    #             return tweet + random.choice(
+    #                                 ['.', '.', '!', '?']), False, twt_num
+    #         else:
+    #             tweet = tweet + ' ' + next_start[0]
+    #             next_word = next_start[1]
+    #
+    #     tweet, next_word, twt_num = self.endTweet(next_word, tweet)
 
 
         # this places a hard cap on the number of continuations
@@ -200,4 +202,4 @@ class Generated():
         #     next_word = None
         # else:
         #     tweet = tweet + " " + str(twt_num) + "/"
-        return tweet, next_word, twt_num
+        # return tweet, next_word, twt_num
