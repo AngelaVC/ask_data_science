@@ -18,10 +18,11 @@ I am currently working through the implementation of unit tests, and these can a
 
 # What's next?
 The following things are on my TODO list:
-* Make my tweet generator more Markovian, keeping and using counts that help be to select best next words.  
-  Right now it just does random selection out of all probabilities.
-* Overlap the trigrams for better intelligibility (rewrite transitions to take in pairs of words as key).
-  May need more text for this.
+* Create a sentence tokenizer -- this I could use to make a more natural ending to tweets and to have better
+  n-grams that don't cross sentence-end.
+* Tweak the way that my generator selects the next word. Right now it selects two new words randomly based on
+  current word trigram (but because repeats are in there it is operating Markovianly, if that's a word). But
+  I have a couple of other ideas for how I might structure my selection. May need more text for this.
 * Compose a better end to my tweets, my first idea is to run my trigrams in reverse and after threshold
   switch to looking for sentence enders.
 * Implement code to start with a particular word.
