@@ -46,8 +46,10 @@ class tweetBot:
             self.postTweet()
             print("Posted tweet below at " + self.lastTime)
             print(self.lastTweet)
-            sleep(randint(self.frequency - int(self.frequency/2),
-                          self.frequency + int(self.frequency/2)))
+            lag = randint(self.frequency - int(self.frequency/2),
+                          self.frequency + int(self.frequency/2))
+            print("Time to next tweet: " + lag + " min")
+            sleep(lag)
 
 
     def postTweet(self):
