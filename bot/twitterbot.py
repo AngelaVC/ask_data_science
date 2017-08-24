@@ -48,7 +48,7 @@ class tweetBot:
             print(self.lastTweet)
             lag = randint(self.frequency - int(self.frequency/2),
                           self.frequency + int(self.frequency/2))
-            print("Time to next tweet: " + lag + " min")
+            print("Time to next tweet: " + str(lag) + " min")
             sleep(lag)
 
 
