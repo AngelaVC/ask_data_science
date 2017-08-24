@@ -28,4 +28,5 @@ The following things are on my TODO list:
 * Implement code to start with a particular word.
 * Implement code to focus on a topic.
 * Improve my database of text, pulling in more websites and tweets.
-* Write tweet responder to respond to mentions of @AskDataScience, including pulling word from mention tweet
+* Write tweet responder to respond to mentions of @AskDataScience, including pulling word from mention
+  tweets. Considering using TFIDF to find 1-2 important words.
