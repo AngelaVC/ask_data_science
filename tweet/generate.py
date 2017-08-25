@@ -3,8 +3,8 @@ from tinydb import TinyDB, Query
 from collections import defaultdict
 import random
 from itertools import chain
+from nltk.tokenize import sent_tokenize
 
-enders = ['.', '!', '?', ';', ',', ':']
 
 def clean_text(text):
     # cleans various text components
@@ -21,24 +21,24 @@ class Generated():
     First just building the text part.
     Generated tweet based on text in db, which has 'text' field
     '''
-    def __init__(self, db=None, topic=None):
+    def __init__(self, db=None, topic=None, enders=['.', '!', '?', ';', ',', ':']):
         self.db = TinyDB(db)
+        self.enders = enders
         self.topic = topic
         self.text = None
+        self.sentences = []
         self.words = []
-        self.trigrams = None
-        self.transitions = None
-        self.starters = None
+        self.trigrams = []
+        self.transitions = {}
+        self.starters = []
 
     def getAll(self):
         self.gatherText()
         self.getWords()
+        self.getSentences()
         self.getTrigrams()
-        self.getTransitions(enders)
-
-    def debug(self):
-        for item in self.db:
-            print(item['text'])
+        self.getTransitions()
+        self.getStarters()
 
     def gatherText(self):
         ''' Takes a TinyDB with a "text" field and combines all the text into
@@ -48,6 +48,9 @@ class Generated():
         for item in self.db:
             all_text = all_text + " " + clean_text(item['text'])
         self.text = all_text
+
+    def getSentences(self):
+        self.sentences = sent_tokenize(self.text)
 
     def getWords(self):
         self.words = re.findall(r"[\w']+|[.!?;,:]", self.text)
@@ -61,12 +64,14 @@ class Generated():
 
         self.trigrams = zip(self.words, self.words[1:], self.words[2:])
 
-    def getTransitions(self, snt_end=enders):
+    def getTransitions(self):
         transitions = defaultdict(list)
         for one, two, three in self.trigrams:
-            if (two not in snt_end) & (three not in snt_end):
-                transitions[one].append([two, three])
+            transitions[one].append([two, three])
         self.transitions = transitions
+
+    def getStarters(self):
+        self.starters = [sentence.split()[0:2] for sentence in self.sentences]
 
     def getRandomLink(self):
         links = []
@@ -74,37 +79,38 @@ class Generated():
             links.extend(item['links'])
         return random.choice(links)
 
-    def endTweet(self, start_word=None, tweet='', snt_end=enders):
+    def endTweet(self, start_word=None, tweet=''):
         next_start = random.choice(self.transitions[start_word])
         tries = 0
-        while len(set(next_start).intersection(set(snt_end))) == 0:
+        while len(set(next_start).intersection(set(self.enders))) == 0:
             next_start = random.choice(self.transitions[start_word])
             tries += 1
             if tries >= 25:
                 return tweet + ' ' + self.getRandomLink()
+        if next_start[0] in self.enders:
+            tweet = tweet + random.choice(['.',' #bigdata',' #datascience','!','?',"?!?",'...'])
+        else:
+            tweet = tweet + ' ' + next_start[0] + random.choice(['.',' #bigdata',' #datascience','!','?',"?!?",'...'])
+        return tweet
 
-        return tweet + next_start[0] + next_start[1], None, 0
-
-    def firstWords(self, start_word=None, snt_end=enders):
+    def firstWords(self, start_word=None):
         # Randomly select word after sentance ender
         # Start tweet with next word to tweet, return word after that
         if start_word is None:
-            starters = []
-            for ender in snt_end:
-                starters.extend(self.transitions[ender])
-            next_start = random.choice(starters)
+            next_start = random.choice(self.starters)
             tweet = next_start[0].capitalize()
         else:
             tweet = start_word
             while len(self.transitions[start_word]) == 0:
                  start_word = random.choice(self.words)
             next_start = random.choice(self.transitions[start_word])
-            tweet = tweet + ' ' + next_start[0]
-
-
+            if next_start[0] not in self.enders:
+                tweet = tweet + ' ' + next_start[0]
+            else:
+                tweet = tweet + next_start[0]
         return tweet, next_start[1]
 
-    def nextWords(self, tweet, current, snt_end=enders):
+    def nextWords(self, tweet, current):
         # Randomly select word after current word
         # Add next word to tweet, return word after that
         if len(self.transitions[current]) > 0:
@@ -116,18 +122,24 @@ class Generated():
                 current = random.choice(self.words)
             next_start = random.choice(self.transitions[current])
 
-        tweet = tweet + ' ' + next_start[0]
+        if next_start[0] not in self.enders:
+            tweet = tweet + ' ' + next_start[0]
+        else:
+            tweet = tweet + next_start[0]
         return tweet, next_start[1]
 
 
-    def writeTweet(self, start_word=None, twt_num=1, num_tweets=1, snt_end=enders,
+    def writeTweet(self, start_word=None, twt_num=1, num_tweets=1,
                       min_length=10):
         tweet, next_word = self.firstWords(start_word)
-        while len(tweet)<110:
-            tweet = tweet + ' ' + next_word
+        while len(tweet) < 110:
+            if next_word not in self.enders:
+                tweet = tweet + ' ' + next_word
+            else:
+                tweet = tweet + next_word
             tweet, next_word = self.nextWords(tweet, next_word)
 
-        tweet = tweet + random.choice(['.',' #bigdata',' #datascience','!','?',"?!?",'...'])
+        tweet = self.endTweet(next_word, tweet)
         return tweet
 
     # Old version of the tweet creation method
