@@ -19,11 +19,12 @@ api = tweepy.API(auth)
 
 
 # TODO need to fix the inheritance here so that I can pass the need to reply
-# back to tweetBot
+# back to tweetBot so that I can use the tweetBot self.api
+# also need to run startTweeting and startReplying at the same time
 class replyListener(tweepy.StreamListener):
     def on_status(self, status):
         api.update_status("@" + status.user.screen_name +
-                          " data science is awesome, but I don't know how to write smart answers yet. Soon!",
+                          " Data science is awesome, but I don't know how to write smart answers yet. Soon!",
                           in_reply_to_status_id=status.id)
         print('Replied to ' + str(status.id))
 
