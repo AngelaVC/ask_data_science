@@ -7,6 +7,7 @@ import tweepy
 
 # import tweet generator
 from tweet.generate import Generated
+from tweet.reader import readTweet
 
 # imports to handle sleeping between tweets
 from time import sleep
@@ -17,15 +18,29 @@ auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth)
 
+db = 'link_db.json'
+
 
 # TODO need to fix the inheritance here so that I can pass the need to reply
 # back to tweetBot so that I can use the tweetBot self.api
 # also need to run startTweeting and startReplying at the same time
 class replyListener(tweepy.StreamListener):
     def on_status(self, status):
-        api.update_status("@" + status.user.screen_name +
-                          " Data science is awesome, but I don't know how to write smart answers yet. Soon!",
+        read_tweet = readTweet(db, status.text)
+        read_tweet.getFreq()
+        read_tweet.nounReplyStarter()
+        generator = Generated(db)
+        generator.starter = read_tweet.replyStart
+        reply = generator.writeTweet()
+        print(reply)
+        while len(reply) > 125:
+            reply_list = reply.split()
+            reply_list = reply_list[:-1]
+            reply = ' '.join(reply_list)
+        print('Final reply: ' + reply)
+        api.update_status("@" + status.user.screen_name + ' ' + reply,
                           in_reply_to_status_id=status.id)
+
         print('Replied to ' + str(status.id))
 
     def on_error(self, status_code):
