@@ -23,7 +23,7 @@ db = 'link_db.json'
 
 # TODO need to fix the inheritance here so that I can pass the need to reply
 # back to tweetBot so that I can use the tweetBot self.api
-# also need to run startTweeting and startReplying at the same time
+
 class replyListener(tweepy.StreamListener):
     def __init__(self, dbname, generator, api):
         self.db = dbname
@@ -33,7 +33,7 @@ class replyListener(tweepy.StreamListener):
 
     def on_status(self, status):
         """Once status arrives, read, analyse, and start a response
-        Then pass response to the generator function
+        Then pass start to the generator function
         """
         print(status.text + " from " + status.user.screen_name)
         read_tweet = readTweet(self.db, status.text)
@@ -65,7 +65,7 @@ class replyListener(tweepy.StreamListener):
 
 class tweetBot:
     ''' This class manages the regular tweeting
-    Can enter a frequency in minutes. Default is 60. Should be sure it is >=2.
+        Can enter a frequency in minutes. Default is 60.
     '''
 
     def __init__(self, user=None, dbname='link_db.json',
@@ -83,7 +83,8 @@ class tweetBot:
         self.replying = False
 
     def setupBot(self):
-        ''' Access and authorize twitter app and initialize api'''
+        ''' Access and authorize twitter app and initialize api
+            Initialize generator to write tweets '''
         self.auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
         self.auth.set_access_token(access_token, access_token_secret)
         self.api = tweepy.API(auth)
