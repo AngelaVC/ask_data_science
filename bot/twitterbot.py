@@ -25,22 +25,33 @@ db = 'link_db.json'
 # back to tweetBot so that I can use the tweetBot self.api
 # also need to run startTweeting and startReplying at the same time
 class replyListener(tweepy.StreamListener):
+    def __init__(self, dbname, generator, api):
+        self.db = dbname
+        self.generator = generator
+        self.api = api
+        print(self.generator)
+
     def on_status(self, status):
-        read_tweet = readTweet(db, status.text)
+        """Once status arrives, read, analyse, and start a response
+        Then pass response to the generator function
+        """
+        print(status.text + " from " + status.user.screen_name)
+        read_tweet = readTweet(self.db, status.text)
         read_tweet.getFreq()
         read_tweet.nounReplyStarter()
-        generator = Generated(db)
-        generator.starter = read_tweet.replyStart
-        reply = generator.writeTweet()
-        print(reply)
-        while len(reply) > 125:
+        self.generator.starter = read_tweet.replyStart
+        reply = "@" + status.user.screen_name + ' ' \
+                + self.generator.writeTweet()
+
+        # if reply is too long, start removing words from end
+        while len(reply) > 140:
             reply_list = reply.split()
             reply_list = reply_list[:-1]
             reply = ' '.join(reply_list)
-        print('Final reply: ' + reply)
-        api.update_status("@" + status.user.screen_name + ' ' + reply,
-                          in_reply_to_status_id=status.id)
+        print('Reply: ' + reply)
+        print('Length: ' + len(reply))
 
+        api.update_status(reply, in_reply_to_status_id=status.id)
         print('Replied to ' + str(status.id))
 
     def on_error(self, status_code):
@@ -76,13 +87,17 @@ class tweetBot:
         self.auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
         self.auth.set_access_token(access_token, access_token_secret)
         self.api = tweepy.API(auth)
-
-    def startTweeting(self):
-        ''' This initializes the generator, sets self.tweeting to True
-            and then calls postTweet at random intervals '''
         self.generator = Generated(self.dbname, self.topic)
         self.generator.getAll()
+
+    def startTweeting(self):
+        ''' This sets self.tweeting to True
+            and then calls postTweet at random intervals centered on
+            user.frequency minutes '''
+        if self.generator is None:
+            self.setupBot()
         self.tweeting = True
+
         while self.tweeting is True:
             self.postTweet()
             print("Posted tweet below at " + self.lastTime)
@@ -101,6 +116,9 @@ class tweetBot:
         self.lastTime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     def startReplying(self):
+        ''' Starts listening for mentions/replies to self.user
+            using replyListener '''
         self.replying = True
-        listen = tweepy.streaming.Stream(self.auth, replyListener())
+        print("Listening for replies to " + self.user)
+        listen = tweepy.streaming.Stream(self.auth, replyListener(self.dbname, self.generator, self.api))
         listen.filter(track=[self.user])
