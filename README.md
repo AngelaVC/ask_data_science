@@ -1,6 +1,6 @@
 # ask_a_data_scientist
 
-This code gathers blog posts from DataTau (and other sources in the future), collects the text, and uses that text to generate tweets that sound like they might have come from an absurd data scientists. You can use it to scrape any topics (e.g. job postings) to do something similar (e.g. absurd blog postings). 
+This code gathers blog posts from DataTau (and other sources in the future), collects the text, and uses that text to generate tweets that sound like they might have come from an absurd data scientists. You can use it to scrape any broad topic (e.g. job postings) to do something similar (e.g. absurd job posting tweets).
 
 # Dependencies
 The scrapers need TinyDB, urllib, BeautifulSoup, and re. The bot needs tweepy as well as TinyDB, time, random, and datetime. The tweet generator needs re, tinydb, collections (for the Counter and defaultdict) and nltk.tokenize for the sentance tokenizer.
