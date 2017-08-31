@@ -32,22 +32,27 @@ class WebPage:
                 print('Error code: ', e.code)
 
     def getAll(self):
+        ''' This gets the beautifulsoup object, title, links, and then cleans
+            the text '''
         self.getSoup()
         self.getLinks()
         self.getTitle()
         self.getClean()
 
     def getSoup(self):
+        ''' uses request and urlopen to access url, then calls BeautifulSoup
+            to create soup object that can be later extracted for data'''
         req = Request(
                 self.url, headers={'User-Agent': "Magic Browser"})
         html = urlopen(req)
         self.soup = bs(html, "lxml")
 
     def getLinks(self):
-        '''This gets links starting with 'http' from single page.
+        ''' Gets links starting with 'http' from a single page.
+            Appends all to self.links
         '''
 
-        # XXXX what if there are no 'a' tags?
+        # TODO take care of case when there are no 'a' tags
 
         for link in self.soup.findAll('a'):
             if 'href' in link.attrs:
@@ -55,6 +60,8 @@ class WebPage:
                     self.links.append(link.attrs['href'])
 
     def getTitle(self):
+        ''' Looks for h1 tags that contain title in their class and adds
+            any text in those to self.title '''
         regex = re.compile('.*title.*')
         title = ''
         for EachPart in self.soup.find_all("h1", {"class": regex}):
@@ -62,6 +69,8 @@ class WebPage:
         self.title = title
 
     def getText(self):
+        ''' Kill all script, style, and math elements, then look to just grab
+            text that does not contain text in the neg_list '''
         # kill all script, style
         for junk in self.soup(["script", "style"]):
             junk.decompose()
@@ -79,6 +88,8 @@ class WebPage:
             self.text = ''
             return self.text
 
+        # Get rid of any paragraphs whose class has any of the negative
+        # language (things like footers etc)
         for paragraph in paragraphs:
             if (paragraph.has_attr("class")):
                 if any([bool(neg_class.search(
@@ -93,6 +104,7 @@ class WebPage:
                             [paragraph.get_text() for paragraph in paragraphs])
 
     def getClean(self):
+        ''' Get rid of elements like hard returns as well as trailing spaces'''
         if self.text is None:
             self.getText()
         self.text = self.text.replace(
