@@ -61,7 +61,7 @@ class readTweet():
                 # will escape after 25 tries
                 try_count = 0
                 while (len(set(next_start).intersection(
-                       set(self.generator.enders))) > 0) & try_count < 25:
+                       set(self.generator.enders))) > 0) & (try_count < 25):
                     next_start = random.choice(self.generator.transitions[key])
                     try_count += 1
 
