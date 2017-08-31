@@ -24,6 +24,8 @@ I am currently working through the implementation of unit tests, and these can a
 
 # What's next?
 The following things are on my TODO list:
+* Listener is timing out and not automatically restarting -- need to look around to see what can be done   
+  about this
 * Tweak the way that my generator selects the next word. Right now it selects two new words randomly based on
   current word trigram (but because repeats are in there it is operating Markovianly, if that's a word). But
   I have a couple of other ideas for how I might structure my selection. May need more text for this.
