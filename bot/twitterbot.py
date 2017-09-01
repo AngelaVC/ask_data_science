@@ -43,14 +43,17 @@ class replyListener(tweepy.StreamListener):
         reply = "@" + status.user.screen_name + ' ' \
                 + self.generator.writeTweet()
 
+        print('Try reply: ' + reply)
         # if reply is too long, start removing words from end
         while len(reply) > 140:
             reply_list = reply.split()
             reply_list = reply_list[:-1]
             reply = ' '.join(reply_list)
-        print('Reply: ' + reply)
-        print('Length: ' + len(reply))
+        print('Final reply: ' + reply)
+        print('Reply length: ' + len(reply))
 
+        # TODO want to pass tweetBot.api to the reply listener and
+        # use that, but that is causing an error, so need to sort out
         api.update_status(reply, in_reply_to_status_id=status.id)
         print('Replied to ' + str(status.id))
 

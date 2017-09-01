@@ -1,8 +1,7 @@
 import re
-from tinydb import TinyDB, Query
+from tinydb import TinyDB
 from collections import defaultdict, Counter
 import random
-from itertools import chain
 from nltk.tokenize import sent_tokenize
 
 
