@@ -25,12 +25,16 @@ I am currently working through the implementation of unit tests, and these can a
 # What's next?
 The following things are on my TODO list:
 * Listener is timing out and not automatically restarting -- need to look around to see what can be done   
-  about this
+  about this. Looks like it is happening when connection is broken and I think I can make a catch.
+* Need to create better insurance in regular tweet composer that we are not over length (like I did in
+  the replyListener)
+* Want to pass tweetBot.api to the replyListener, but for some reason this isn't working
+* Need to record tweets and outputs in a database so that I can check in on bot  
 * Tweak the way that my generator selects the next word. Right now it selects two new words randomly based on
   current word trigram (but because repeats are in there it is operating Markovianly, if that's a word). But
   I have a couple of other ideas for how I might structure my selection. May need more text for this.
-* Compose a better end to my tweets, my first idea is to run my trigrams in reverse and after threshold
-  switch to looking for sentence enders.
+* Compose a better end to my tweets, my first idea is to run trigrams in reverse (so key is end of trigram)  
+  and after threshold number of characters switch to looking for sentence enders.
 * Implement code to focus on a topic.
 * Improve my database of text, pulling in more websites and tweets.
 * Improve the way my responder starts reply tweets, mining the tweet for the topic.
