@@ -25,7 +25,8 @@ I am currently working through the implementation of unit tests, and these can a
 # What's next?
 The following things are on my TODO list:
 * Listener is timing out and not automatically restarting -- need to look around to see what can be done   
-  about this. Looks like it is happening when connection is broken and I think I can make a catch.
+  about this. Looks like it is happening when connection is broken and I think I can make a catch. see
+  for instance https://github.com/tweepy/tweepy/issues/617
 * Need to create better insurance in regular tweet composer that we are not over length (like I did in
   the replyListener)
 * Want to pass tweetBot.api to the replyListener, but for some reason this isn't working
